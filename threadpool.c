@@ -115,7 +115,7 @@ void *Thread_run(void *arg) {
 void ThreadPool_check(ThreadPool_t *tp) {
     pthread_mutex_lock(&tp->jobs.mutex);
 
-    while (tp->jobs.size > 0) {
+    while (tp->jobs.size > 0 && !tp->stop) {
         pthread_cond_wait(&tp->jobs.cond, &tp->jobs.mutex);
     }
 
