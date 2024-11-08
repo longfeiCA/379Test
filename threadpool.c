@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void *Thread_run(void *arg);
+void *Thread_run(ThreadPool_t *tp);  // updated declaration to match header
 
 ThreadPool_t *ThreadPool_create(unsigned int num) {
     ThreadPool_t *tp = (ThreadPool_t *)malloc(sizeof(ThreadPool_t));
@@ -19,7 +19,7 @@ ThreadPool_t *ThreadPool_create(unsigned int num) {
     pthread_cond_init(&tp->jobs.cond, NULL);
 
     for (unsigned int i = 0; i < num; i++) {
-        pthread_create(&tp->threads[i], NULL, Thread_run, tp);
+        pthread_create(&tp->threads[i], NULL, (void *(*)(void *))Thread_run, tp);
     }
 
     return tp;
@@ -97,9 +97,7 @@ ThreadPool_job_t *ThreadPool_get_job(ThreadPool_t *tp) {
 }
 
 
-void *Thread_run(void *arg) {
-    ThreadPool_t *tp = (ThreadPool_t *)arg;
-
+void *Thread_run(ThreadPool_t *tp) {  // updated function definition to take ThreadPool_t * argument directly
     while (1) {
         ThreadPool_job_t *job = ThreadPool_get_job(tp);
         if (!job) break;
@@ -121,5 +119,3 @@ void ThreadPool_check(ThreadPool_t *tp) {
 
     pthread_mutex_unlock(&tp->jobs.mutex);
 }
-
-
