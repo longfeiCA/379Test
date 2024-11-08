@@ -16,14 +16,17 @@ typedef struct {
     unsigned int size;               // no. jobs in the queue
     ThreadPool_job_t *head;          // pointer to the first (shortest) job
     // add other members if needed
+    ThreadPool_job_t *tail;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
 } ThreadPool_job_queue_t;
 
 typedef struct {
     pthread_t *threads;              // pointer to the array of thread handles
+    unsigned int num_threads;
     ThreadPool_job_queue_t jobs;     // queue of jobs waiting for a thread to run
-    // add other members if needed
+    bool stop;
 } ThreadPool_t;
-
 
 /**
 * C style constructor for creating a new ThreadPool object
@@ -68,13 +71,8 @@ ThreadPool_job_t *ThreadPool_get_job(ThreadPool_t *tp);
 * Parameters:
 *     tp - Pointer to the ThreadPool object containing this thread
 */
-void *Thread_run(ThreadPool_t *tp);
+void *Thread_run(void *arg);
 
-/**
-* Ensure that all threads are idle and the job queue is empty before returning
-* Parameters:
-*     tp - Pointer to the ThreadPool object that will be destroyed
-*/
 void ThreadPool_check(ThreadPool_t *tp);
 
 #endif

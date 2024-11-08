@@ -3,28 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// Job queue and thread pool structures
-typedef struct ThreadPool_job_t {
-    thread_func_t func;
-    void *arg;
-    struct ThreadPool_job_t *next;
-} ThreadPool_job_t;
-
-typedef struct {
-    unsigned int size;
-    ThreadPool_job_t *head;
-    ThreadPool_job_t *tail;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-} ThreadPool_job_queue_t;
-
-typedef struct {
-    pthread_t *threads;
-    unsigned int num_threads;
-    ThreadPool_job_queue_t jobs;
-    bool stop;
-} ThreadPool_t;
-
 static void *Thread_run(void *arg);
 
 ThreadPool_t *ThreadPool_create(unsigned int num) {
