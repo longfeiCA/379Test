@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 
 // Define partition structure and global variables
 typedef struct KeyValue {
@@ -19,9 +20,11 @@ typedef struct Partition {
 
 static Partition *partitions;      // Array of partitions
 static unsigned int num_partitions; // Total partitions
+static Reducer global_reducer;
 
 void MR_Run(unsigned int file_count, char *file_names[], Mapper mapper, Reducer reducer, 
             unsigned int num_workers, unsigned int num_parts) {
+    global_reducer = reducer;
     // Initialize partitions and mutexes
     num_partitions = num_parts;
     partitions = (Partition *)malloc(num_parts * sizeof(Partition));
@@ -87,22 +90,18 @@ unsigned int MR_Partitioner(char *key, unsigned int num_partitions) {
 void MR_Reduce(void *threadarg) {
     unsigned int partition_idx = (unsigned int)(intptr_t)threadarg;
 
-    // Acquire the lock for the partition
     pthread_mutex_lock(&partitions[partition_idx].mutex);
 
-    // Iterate over the keys in the partition and reduce each one
     KeyValue *current = partitions[partition_idx].head;
     while (current) {
         char *key = current->key;
-        reducer(key, partition_idx);
+        global_reducer(key, partition_idx); // Use the global reducer pointer
 
-        // Move to the next key-value
         while (current && strcmp(current->key, key) == 0) {
             current = current->next;
         }
     }
 
-    // Release the lock
     pthread_mutex_unlock(&partitions[partition_idx].mutex);
 }
 
