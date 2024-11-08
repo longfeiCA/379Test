@@ -52,7 +52,7 @@ bool ThreadPool_add_job(ThreadPool_t *tp, thread_func_t func, void *arg) {
     job->next = NULL;
 
     pthread_mutex_lock(&tp->jobs.mutex);
-
+    
     if (tp->jobs.tail) {
         tp->jobs.tail->next = job;
     } else {
@@ -61,11 +61,14 @@ bool ThreadPool_add_job(ThreadPool_t *tp, thread_func_t func, void *arg) {
     tp->jobs.tail = job;
     tp->jobs.size++;
 
-    pthread_cond_signal(&tp->jobs.cond);
-    pthread_mutex_unlock(&tp->jobs.mutex);
+    if (tp->jobs.size > 0) {
+        pthread_cond_signal(&tp->jobs.cond);
+    }
 
+    pthread_mutex_unlock(&tp->jobs.mutex);
     return true;
 }
+
 
 
 ThreadPool_job_t *ThreadPool_get_job(ThreadPool_t *tp) {

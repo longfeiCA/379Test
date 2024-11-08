@@ -109,19 +109,15 @@ void MR_Reduce(void *threadarg) {
 
 char *MR_GetNext(char *key, unsigned int partition_idx) {
     pthread_mutex_lock(&partitions[partition_idx].mutex);
-    static KeyValue *current = NULL;
+    KeyValue *current = partitions[partition_idx].head;
 
-    if (!current || strcmp(current->key, key) != 0) {
-        current = partitions[partition_idx].head;
-        while (current && strcmp(current->key, key) != 0) {
-            current = current->next;
-        }
+    while (current && strcmp(current->key, key) != 0) {
+        current = current->next;
     }
 
     char *value = NULL;
     if (current && strcmp(current->key, key) == 0) {
         value = current->value;
-        current = current->next;
     }
 
     pthread_mutex_unlock(&partitions[partition_idx].mutex);
