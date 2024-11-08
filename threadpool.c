@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static void *Thread_run(void *arg);
+void *Thread_run(void *arg);
 
 ThreadPool_t *ThreadPool_create(unsigned int num) {
     ThreadPool_t *tp = (ThreadPool_t *)malloc(sizeof(ThreadPool_t));
@@ -97,7 +97,7 @@ ThreadPool_job_t *ThreadPool_get_job(ThreadPool_t *tp) {
 }
 
 
-static void *Thread_run(void *arg) {
+void *Thread_run(void *arg) {
     ThreadPool_t *tp = (ThreadPool_t *)arg;
 
     while (1) {
